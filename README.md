@@ -1,2 +1,11 @@
+Heavily simplified library for rf24.
 
-**See http://tmrh20.github.io/RF24 for all documentation**
+This version is MUCH easyier than the original to port to any platform.
+
+(Soon) included support classes:
+
+Atmega 328
+
+Linux
+
+STM32
