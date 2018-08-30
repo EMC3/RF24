@@ -4,15 +4,20 @@
 #include <linux/spi/spidev.h>
 #include <sys/ioctl.h>
 #include <inttypes.h>
+#include <string.h>
+#include <string>
+#include <time.h>
+ #include <sys/time.h>
 
 LinuxHal::LinuxHal(const char * spiDevice, int gpio)
 {
     speed = 4000000;
     spiFd = open(spiDevice,O_RDWR);
+    uint32_t mode = 0;
     ioctl(spiFd, SPI_IOC_WR_MODE, &mode);
     ioctl(spiFd, SPI_IOC_RD_MODE, &mode);
-    ioctl(this->fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
-    ioctl(this->fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
+    ioctl(spiFd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+    ioctl(spiFd, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
 
 
     writeInFile("/sys/class/gpio/export",std::to_string(gpio));
@@ -32,8 +37,12 @@ void LinuxHal::selectRf24(bool s)
 
 void LinuxHal::enableRf24(bool s)
 {
-    if(s)writeInFile(gpioPath,"1");
-    else writeInFile(gpioPath,"0");
+    if(s){
+        writeInFile(gpioPath,"1");
+    }
+    else{
+        writeInFile(gpioPath,"0");
+    }
 }
 
 void LinuxHal::rf24SpiTransfer(void *tx, void *rx, int n)
@@ -49,7 +58,7 @@ void LinuxHal::rf24SpiTransfer(void *tx, void *rx, int n)
     tr.cs_change = 0;
 
     int ret;
-    ret = ioctl(this->fd, SPI_IOC_MESSAGE(1), &tr);
+    ret = ioctl(spiFd, SPI_IOC_MESSAGE(1), &tr);
 }
 
 void LinuxHal::delay(uint64_t ms)

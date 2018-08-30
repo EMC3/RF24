@@ -1,10 +1,13 @@
-#include "rf24.h"
+#include "RF24.h"
 #include "linuxhal.h"
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
+#include <stdio.h>
+
+using namespace std;
 
 const uint8_t pipes[][6] = {"1Node","2Node"};
 bool radioNumber = 1;
@@ -12,13 +15,13 @@ bool radioNumber = 1;
 int main(){
 	LinuxHal hal("/dev/spidev0.0",32+31);
 	RF24 radio(&hal);
+    
+    
+    
 	bool role_ping_out = true, role_pong_back = false;
   bool role = role_pong_back;
 
   cout << "RF24/examples/GettingStarted/\n";
-
-  // Setup and configure rf radio
-  radio.begin();
 
   // optionally, increase the delay between retries & # of retries
   radio.setRetries(15,15);
@@ -67,9 +70,9 @@ int main(){
 			// Take the time, and send it.  This will block until complete
 
 			printf("Now sending...\n");
-			unsigned long time = millis();
+			uint64_t time = hal.ms();
 
-			bool ok = radio.write( &time, sizeof(unsigned long) );
+			bool ok = radio.write( &time, 8 );
 
 			if (!ok){
 				printf("failed.\n");
@@ -78,10 +81,10 @@ int main(){
 			radio.startListening();
 
 			// Wait here until we get a response, or timeout (250ms)
-			unsigned long started_waiting_at = millis();
+			uint64_t started_waiting_at = hal.ms();
 			bool timeout = false;
 			while ( ! radio.available() && ! timeout ) {
-				if (millis() - started_waiting_at > 200 )
+				if (hal.ms() - started_waiting_at > 200 )
 					timeout = true;
 			}
 
@@ -98,7 +101,7 @@ int main(){
 				radio.read( &got_time, sizeof(unsigned long) );
 
 				// Spew it
-				printf("Got response %lu, round-trip delay: %lu\n",got_time,millis()-got_time);
+				printf("Got response %lu, round-trip delay: %lu\n",got_time,hal.ms()-got_time);
 			}
 			sleep(1);
 		}
@@ -118,11 +121,11 @@ int main(){
 
 				// Fetch the payload, and see if this was the last one.
 				while(radio.available()){
-					radio.read( &got_time, sizeof(unsigned long) );
+					radio.read( &got_time, 8 );
 				}
 				radio.stopListening();
 				
-				radio.write( &got_time, sizeof(unsigned long) );
+				radio.write( &got_time, 8);
 
 				// Now, resume listening so we catch the next packets.
 				radio.startListening();
@@ -130,7 +133,7 @@ int main(){
 				// Spew it
 				printf("Got payload(%d) %lu...\n",sizeof(unsigned long), got_time);
 				
-				delay(925); //Delay after payload responded to, minimize RPi CPU time
+				hal.delay(925); //Delay after payload responded to, minimize RPi CPU time
 				
 			}
 		
