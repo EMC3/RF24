@@ -63,8 +63,6 @@ public:
 
   RF24(HAL * hal);
 
-  virtual ~RF24() {};
-
   /**
    * Checks if the chip is connected to the SPI bus
    */
