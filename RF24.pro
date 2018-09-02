@@ -23,16 +23,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         rf24.cpp \
-    hal.cpp \
-    linuxhal.cpp
+    hal.cpp
 
 HEADERS += \
         rf24.h \
     hal.h \
     nRF24L01.h \
-    RF24_config.h \
-    linuxhal.h
+    RF24_config.h
 unix {
+
+    SOURCES += linuxhal.cpp
+    HEADERS += linuxhal.h
+
     target.path = /usr/lib
     INSTALLS += target
 }

@@ -542,11 +542,11 @@ bool RF24::write( const void* buf, uint8_t len, const bool multicast )
 	//Start Writing
 	startFastWrite(buf,len,multicast);
 
-    uint64_t timer = hal->ms();
+    TIME_TYPE timer = hal->ms();
 
 	
 	while( ! ( get_status()  & ( _BV(TX_DS) | _BV(MAX_RT) ))) { 
-        uint64_t timeElapsed = hal->ms() - timer;
+        TIME_TYPE timeElapsed = hal->ms() - timer;
             if(timeElapsed > 95){
                 errNotify();
                 return 0;
@@ -582,10 +582,10 @@ bool RF24::writeBlocking( const void* buf, uint8_t len, uint32_t timeout )
 	//This way the FIFO will fill up and allow blocking until packets go through
 	//The radio will auto-clear everything in the FIFO as long as CE remains high
 
-    uint64_t timer = hal->ms();							  //Get the time that the payload transmission started
+    TIME_TYPE timer = hal->ms();							  //Get the time that the payload transmission started
 
 	while( ( get_status()  & ( _BV(TX_FULL) ))) {		  //Blocking only if FIFO is full. This will loop and block until TX is successful or timeout
-        uint64_t timeElapsed = hal->ms() - timer;
+        TIME_TYPE timeElapsed = hal->ms() - timer;
 		if( get_status() & _BV(MAX_RT)){					  //If MAX Retries have been reached
 			reUseTX();										  //Set re-transmit and clear the MAX_RT interrupt flag
             if(timeElapsed > timeout){ return 0; }		  //If this payload has exceeded the user-defined timeout, exit and return 0
@@ -625,7 +625,7 @@ bool RF24::writeFast( const void* buf, uint8_t len, const bool multicast )
 	//Return 0 so the user can control the retrys and set a timer or failure counter if required
 	//The radio will auto-clear everything in the FIFO as long as CE remains high
 
-    uint64_t timer = hal->ms();
+    TIME_TYPE timer = hal->ms();
 
 	
 	while( ( get_status()  & ( _BV(TX_FULL) ))) {			  //Blocking only if FIFO is full. This will loop and block until TX is successful or fail
@@ -636,7 +636,7 @@ bool RF24::writeFast( const void* buf, uint8_t len, const bool multicast )
 			return 0;										  //Return 0. The previous payload has been retransmitted
 															  //From the user perspective, if you get a 0, just keep trying to send the same payload
 		}
-        uint64_t timeElapsed = hal->ms() - timer;
+        TIME_TYPE timeElapsed = hal->ms() - timer;
             if(timeElapsed > 95 ){
 				errNotify();
 				return 0;							
@@ -699,7 +699,7 @@ bool RF24::rxFifoFull(){
 bool RF24::txStandBy(){
 
 
-        uint64_t timeout = hal->ms();
+        TIME_TYPE timeout = hal->ms();
 
 	while( ! (read_register(FIFO_STATUS) & _BV(TX_EMPTY)) ){
 		if( get_status() & _BV(MAX_RT)){
@@ -708,7 +708,7 @@ bool RF24::txStandBy(){
 			flush_tx();    //Non blocking, flush the data
 			return 0;
 		}
-uint64_t t = hal->ms() - timeout;
+TIME_TYPE t = hal->ms() - timeout;
             if( t > 95){
 				errNotify();
 
@@ -732,7 +732,7 @@ bool RF24::txStandBy(uint32_t timeout, bool startTx){
 	  stopListening();
       hal->enableRf24(true);
 	}
-    uint64_t start = hal->ms();
+    TIME_TYPE start = hal->ms();
 
 	while( ! (read_register(FIFO_STATUS) & _BV(TX_EMPTY)) ){
 		if( get_status() & _BV(MAX_RT)){
@@ -744,7 +744,7 @@ bool RF24::txStandBy(uint32_t timeout, bool startTx){
                     hal->enableRf24(false); flush_tx(); return 0;
 				}
 		}
-        uint64_t elapsed = hal->ms() - start ;
+        TIME_TYPE elapsed = hal->ms() - start ;
             if(elapsed > (timeout+95)){
 				errNotify();
 				return 0;	
