@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 
-#define _BV(x) 1<<x
+#define _BV(x) (1<<(x))
 
 uint8_t RF24::read_register(uint8_t reg, uint8_t* buf, uint8_t len)
 {
@@ -487,9 +487,14 @@ static const uint8_t child_pipe_enable[] =
   ERX_P0, ERX_P1, ERX_P2, ERX_P3, ERX_P4, ERX_P5
 };
 
+
+
 void RF24::stopListening(void)
 {  
+    hal->enableRf24(false);
+    
   if(read_register(FEATURE) & _BV(EN_ACK_PAY)){
+      
 	flush_tx();
   }
 
@@ -546,11 +551,12 @@ bool RF24::write( const void* buf, uint8_t len, const bool multicast )
 
 	
 	while( ! ( get_status()  & ( _BV(TX_DS) | _BV(MAX_RT) ))) { 
-        TIME_TYPE timeElapsed = hal->ms() - timer;
-            if(timeElapsed > 95){
+             TIME_TYPE timeElapsed = hal->ms() - timer;
+
+            if(timeElapsed > 250){
                 errNotify();
                 return 0;
-			}
+	         }
             if(timeElapsed > 3){
                 hal->delay(2);
             }
