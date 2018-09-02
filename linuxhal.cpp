@@ -7,7 +7,7 @@
 #include <string.h>
 #include <string>
 #include <time.h>
- #include <sys/time.h>
+#include <sys/time.h>
 
 LinuxHal::LinuxHal(const char * spiDevice, int gpio)
 {
@@ -22,7 +22,7 @@ LinuxHal::LinuxHal(const char * spiDevice, int gpio)
 
     writeInFile("/sys/class/gpio/export",std::to_string(gpio));
 
-        delay(5);
+    delay(5);
 
     writeInFile("/sys/class/gpio/gpio"+std::to_string(gpio)+"/direction","out");
 
@@ -70,9 +70,9 @@ uint64_t LinuxHal::ms()
 {
     struct timeval t;
     gettimeofday(&t, NULL);
-       uint64_t seconds  = t.tv_sec;
-       uint64_t useconds = t.tv_usec;
-       return  ((seconds) * 1000 + useconds/1000);
+    uint64_t seconds  = t.tv_sec;
+    uint64_t useconds = t.tv_usec;
+    return  ((seconds) * 1000 + useconds/1000);
 }
 #include <fstream>
 
