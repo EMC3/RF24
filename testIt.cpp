@@ -9,8 +9,8 @@
 
 using namespace std;
 
-const uint8_t pipes[][6] = {"1Node","2Node"};
-bool radioNumber = 1;
+const uint8_t pipes[][6] = {"MASTR","BRD01"};
+bool radioNumber = 0;
 
 int main(){
 	LinuxHal hal("/dev/spidev0.0",32+31);
@@ -49,13 +49,18 @@ int main(){
   // This simple sketch opens two pipes for these two nodes to communicate
   // back and forth.
 
-    if ( !radioNumber )    {
-      radio.openWritingPipe(pipes[0]);
-      radio.openReadingPipe(1,pipes[1]);
-    } else {
+    radio.setPALevel(RF24_PA_MAX);
+	radio.setDataRate(RF24_2MBPS);
+	radio.setChannel(90);
+	radio.setRetries(5,15);
+	radio.setPayloadSize(6);
+	radio.setAddressWidth(5);
+    
+
+    
       radio.openWritingPipe(pipes[1]);
       radio.openReadingPipe(1,pipes[0]);
-    }
+    
 	
 	radio.startListening();
 	
@@ -72,7 +77,7 @@ int main(){
 			printf("Now sending...\n");
 			uint64_t time = hal.ms();
 
-			bool ok = radio.write( &time, 8 );
+			bool ok = radio.write( &time, 6 );
 
 			if (!ok){
 				printf("failed.\n");
@@ -97,11 +102,13 @@ int main(){
 			else
 			{
 				// Grab the response, compare, and send to debugging spew
-				unsigned long got_time;
-				radio.read( &got_time, sizeof(unsigned long) );
-
+				uint16_t data[3];
+				radio.read( data, 6 );
+                                
+                                int v = data[0];
+                              
 				// Spew it
-				printf("Got response %lu, round-trip delay: %lu\n",got_time,hal.ms()-got_time);
+				printf("V=%d\n",v);
 			}
 			sleep(1);
 		}

@@ -36,7 +36,7 @@ int main(int argc, const char * argv[]){
     comm.setAddressWidth(5);
 
     comm.openWritingPipe((const unsigned char *)addr);
-    comm.openReadingPipe(1,(const unsigned char *)"MASTR");
+    comm.openReadingPipe(1,(const unsigned char *)"MaStR");
 
     srand(hal.ms());
 
@@ -46,7 +46,7 @@ int main(int argc, const char * argv[]){
     bool pingOk = false;
 
     while(!pingOk){
-        cout << "Attempting to ping IoBoard @ "<<addr<<"... ";
+        cout << "Attempting to ping IoBoard @ "<<addr<<"... "<<endl;
 
         comm.stopListening();
         txdata[0] = COMMAND_PING;
@@ -59,7 +59,7 @@ int main(int argc, const char * argv[]){
         uint64_t started_waiting_at = hal.ms();
         bool timeout = false;
         while ( ! comm.available() && ! timeout ) {
-            if (hal.ms() - started_waiting_at > 500 )
+            if (hal.ms() - started_waiting_at > 1000 )
                 timeout = true;
         }
         if(timeout){
@@ -87,9 +87,11 @@ int main(int argc, const char * argv[]){
 
     comm.stopListening();
 
-    cout << "Enter Command >";
+    
 
     while(true){
+        cout << "Enter Command >";
+        
         std::string input;
         vector<string> args;
 
@@ -150,7 +152,7 @@ int main(int argc, const char * argv[]){
 
             int port = std::stoi(args[1]);
 
-            txdata[0] = COMMAND_WRITE_GPIO;
+            txdata[0] = COMMAND_READ_DIGITAL;
             txdata[1] = port;
 
             bool ok = comm.write(txdata,6);
@@ -164,11 +166,12 @@ int main(int argc, const char * argv[]){
             uint64_t started_waiting_at = hal.ms();
             bool timeout = false;
             while ( ! comm.available() && ! timeout ) {
-                if (hal.ms() - started_waiting_at > 500 )
+                if (hal.ms() - started_waiting_at > 1000 )
                     timeout = true;
             }
             if(timeout){
                 cout << "Failed: Got no response!"<<endl;
+                comm.stopListening();
                 continue;
             }
 
@@ -187,12 +190,13 @@ int main(int argc, const char * argv[]){
 
             int port = std::stoi(args[1]);
 
-            txdata[0] = COMMAND_WRITE_GPIO;
+            txdata[0] = COMMAND_READ_ANALOG;
             txdata[1] = port;
 
             bool ok = comm.write(txdata,6);
             if(!ok){
                 cout << "TX Failed!"<<endl;
+                comm.stopListening();
                 continue;
             }
 
@@ -201,11 +205,12 @@ int main(int argc, const char * argv[]){
             uint64_t started_waiting_at = hal.ms();
             bool timeout = false;
             while ( ! comm.available() && ! timeout ) {
-                if (hal.ms() - started_waiting_at > 500 )
+                if (hal.ms() - started_waiting_at > 1000 )
                     timeout = true;
             }
             if(timeout){
                 cout << "Failed: Got no response!"<<endl;
+                comm.stopListening();
                 continue;
             }
 
@@ -226,7 +231,7 @@ int main(int argc, const char * argv[]){
             int port = std::stoi(args[1]);
             int val = std::stoi(args[2]);
 
-            txdata[0] = COMMAND_WRITE_GPIO;
+            txdata[0] = COMMAND_WRITE_POWER;
             txdata[1] = port;
             txdata[2] = val;
 
